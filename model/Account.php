@@ -1,42 +1,87 @@
 <?php
     class Account{
         private ?int $idTK;
-        private string $tenTK;
+        private string $hoten;
         private string $dienthoai;
         private string $email;
-        private ?string $matkhau;
+        private string $matkhau;
         private int $trangthai;
-        private int $idNQ;
+        private int $idQuyen;
+        private ?string $hinhanh;
+        
 
         function __construct(){
             $this->idTK=0;
-            $this->tenTK = '';
+            $this->hoten = '';
             $this->dienthoai = '';
             $this->email = '';
             $this->matkhau = '';
             $this->trangthai = 0;
-            $this->idNQ = 0;
+            $this->idQuyen = 0;
+            $this->hinhanh = '';
         }
 
-        function nhap(string $tenTK, string $dienthoai, string $email, string $matkhau = NULL, int $trangthai, $idNQ, int $idTK = 0){
-            $this->idTK = $idTK;
-            $this->tenTK = $tenTK;
+        function nhap(string $hoten, string $dienthoai, string $email, string $matkhau, int $trangthai, int $idQuyen, ?string $hinhanh, int $idTK = 0){
+            $this->hoten = $hoten;
             $this->dienthoai = $dienthoai;
             $this->email = $email;
             $this->matkhau = $matkhau;
             $this->trangthai = $trangthai;
-            $this->idNQ = $idNQ;
+            $this->idQuyen = $idQuyen;
+            $this->hinhanh = $hinhanh;
+            $this->idTK = $idTK;
         }
 
         static function getAll(){
             $list = [];
-            $sql = 'SELECT idTK, tenTK, email, matkhau, dienthoai, taikhoan.idNQ AS idNQ, tenNQ, nhomquyen.trangthai AS trangthaiNQ, taikhoan.trangthai AS trangthai FROM taikhoan 
-            LEFT JOIN nhomquyen ON taikhoan.idNQ = nhomquyen.idNQ';
+            $sql = 'SELECT idTK, hoten, email, matkhau, dienthoai, taikhoan.idQuyen AS idQuyen, dm_quyen.ten AS tenNQ, taikhoan.trangthai AS trangthai, hinhanh FROM taikhoan 
+            LEFT JOIN dm_quyen ON taikhoan.idQuyen = dm_quyen.idQuyen';
             $con = new Database();
             $req = $con->getAll($sql);
             foreach($req as $item){
                 $account = new self();
-                $account->nhap($item['tenTK'], $item['dienthoai'], $item['email'], $item['matkhau'], $item['trangthai'], $item['idNQ'], $item['idTK']);
+                $account->nhap($item['hoten'], $item['dienthoai'], $item['email'], $item['matkhau'], $item['trangthai'], $item['idQuyen'], $item['idTK']);
+                $list[] = [
+                    'account' => $account->toArray(),
+                    'tenNQ' => $item['tenNQ'],
+                ];
+            }
+            return $list;
+        }
+
+        
+
+        static function getCommentsByOwner(int $idTK) {
+            $sql = 'SELECT sanpham.tieude AS room_name, danhgia.sosao AS sosao, danhgia.binhluan AS content 
+                    FROM sanpham 
+                    LEFT JOIN datphong ON sanpham.idSP = datphong.idSP 
+                    LEFT JOIN danhgia ON datphong.idDG = danhgia.idDG 
+                    WHERE sanpham.idTK = ' . $idTK . ' AND danhgia.idDG IS NOT NULL';
+            $con = new Database();
+            $req = $con->getAll($sql);
+    
+            $comments = [];
+            foreach ($req as $item) {
+                $comments[] = [
+                    'room_name' => $item['room_name'],
+                    'sosao' => (int)$item['sosao'],
+                    'content' => $item['content'] ?: 'Không có nội dung'
+                ];
+            }
+            return $comments;
+        }
+
+        static function getAllCustomer() {
+            $list = [];
+            $sql = 'SELECT taikhoan.idTK AS idTK, hoten, email, matkhau, dienthoai, taikhoan.idQuyen AS idQuyen, dm_quyen.ten AS tenNQ, taikhoan.trangthai AS trangthai, hinhanh, host.stk AS stk FROM taikhoan 
+            LEFT JOIN dm_quyen ON taikhoan.idQuyen = dm_quyen.idQuyen
+            LEFT JOIN host ON taikhoan.idTK = host.idTK
+            WHERE taikhoan.idQuyen = 3';
+            $con = new Database();
+            $req = $con->getAll($sql);
+            foreach($req as $item){
+                $account = new self();
+                $account->nhap($item['hoten'], $item['dienthoai'], $item['email'], $item['matkhau'], $item['trangthai'], $item['idQuyen'], $item['idTK']);
                 $list[] = [
                     'account' => $account->toArray(),
                     'tenNQ' => $item['tenNQ']
@@ -58,7 +103,7 @@
             $req = $con->getOne($sql);
             if($req!=null){
                 $account = new self();
-                $account->nhap($req['tenTK'], $req['dienthoai'], $req['email'], $req['matkhau'], $req['trangthai'], $req['idNQ'], $req['idTK']);
+                $account->nhap($req['hoten'], $req['dienthoai'], $req['email'], $req['matkhau'], $req['trangthai'], $req['idQuyen'], $req['idTK']);
                 return $account;
             }
             return null;
@@ -70,26 +115,26 @@
             $req = $con->getOne($sql);
             if($req!=null){
                 $account = new self();
-                $account->nhap($req['tenTK'], $req['dienthoai'], $req['email'], $req['matkhau'], $req['trangthai'], $req['idNQ'], $req['idTK']);
+                $account->nhap($req['hoten'], $req['dienthoai'], $req['email'], $req['matkhau'], $req['trangthai'], $req['idQuyen'], $req['idTK']);
                 return $account;
             }
             return null;
         }
 
-        static function search($kyw, $idNQ, $trangthai){
-            $sql = 'SELECT idTK, tenTK, email, matkhau, dienthoai, taikhoan.idNQ AS idNQ, tenNQ, nhomquyen.trangthai AS trangthaiNQ, taikhoan.trangthai AS trangthai
+        static function search($kyw, $idQuyen, $trangthai){
+            $sql = 'SELECT idTK, hoten, email, matkhau, dienthoai, taikhoan.idQuyen AS idQuyen, dm_quyen.ten AS tenNQ, dm_quyen.trangthai AS trangthaiNQ, taikhoan.trangthai AS trangthai
                 FROM taikhoan
-                    LEFT JOIN nhomquyen ON taikhoan.idNQ = nhomquyen.idNQ
+                    LEFT JOIN dm_quyen ON taikhoan.idQuyen = dm_quyen.idQuyen
                 WHERE 1';
-            if($kyw != NULL)  $sql .= ' AND (idTK LIKE "%'.$kyw.'%" OR tenTK LIKE "%'.$kyw.'%")';
-            if($idNQ != NULL)  $sql .= ' AND taikhoan.idNQ = '.$idNQ;
+            if($kyw != NULL)  $sql .= ' AND (idTK LIKE "%'.$kyw.'%" OR hoten LIKE "%'.$kyw.'%")';
+            if($idQuyen != NULL)  $sql .= ' AND taikhoan.idQuyen = '.$idQuyen;
             if($trangthai != NULL) $sql .= ' AND taikhoan.trangthai = '.$trangthai;
             $list = [];
             $con = new Database();
             $req = $con->getAll($sql);
             foreach($req as $item){
                 $account = new self();
-                $account->nhap($item['tenTK'], $item['dienthoai'], $item['email'], $item['matkhau'], $item['trangthai'], $item['idNQ'], $item['idTK']);
+                $account->nhap($item['hoten'], $item['dienthoai'], $item['email'], $item['matkhau'], $item['trangthai'], $item['idQuyen'], $item['idTK']);
                 $list[] = [
                     'account' => $account->toArray(),
                     'tenNQ' => $item['tenNQ']
@@ -100,8 +145,8 @@
 
         function add(){
             if(!(self::isExist($this->idTK, $this->email))){
-                $sql = 'INSERT INTO taikhoan (tenTK, email, matkhau, dienthoai, trangthai, idNQ) 
-                VALUES ("' . $this->tenTK . '", "' . $this->email . '", "' . $this->matkhau . '", "' . $this->dienthoai . '", ' . $this->trangthai . ', ' . $this->idNQ . ')';
+                $sql = 'INSERT INTO taikhoan (idTK, hoten, dienthoai, email, matkhau, trangthai, idQuyen, hinhanh) 
+                VALUES ("' . $this->idTK .'", "' . $this->hoten . '", "' . $this->dienthoai . '", "' . $this->email . '", "' . $this->matkhau . '", ' . $this->trangthai . ', ' . $this->idQuyen . ', ' . $this->hinhanh . ')';
                 $con = new Database();
                 $con->execute($sql);
                 return true;
@@ -112,11 +157,11 @@
         function update(){
             if(!(self::isExist($this->idTK, $this->email))){
                 $sql = 'UPDATE taikhoan 
-                    SET tenTK = "' . $this->tenTK . '", 
+                    SET hoten = "' . $this->hoten . '", 
                         dienthoai = "' . $this->dienthoai . '", 
                         email = "' . $this->email . '",
                         trangthai = ' . $this->trangthai . ', 
-                        idNQ = ' . $this->idNQ . ' 
+                        idQuyen = ' . $this->idQuyen . ' 
                     WHERE idTK = ' . $this->idTK;
                 $con = new Database();
                 $con->execute($sql);
@@ -124,16 +169,31 @@
             }
             return false;
         }
+
+        function lock(){
+            $sql = 'UPDATE taikhoan SET trangthai = 0 WHERE idTK = '.$this->idTK;
+            $con = new Database();
+            $con->execute($sql);
+            return true;
+        }
+
+        function unlock() {
+            $sql = 'UPDATE taikhoan SET trangthai = 1 WHERE idTK = '.$this->idTK;
+            $con = new Database();
+            $con->execute($sql);
+            return true;
+        }
         
         function toArray() {
             return [
                 'idTK' => $this->idTK,
-                'tenTK' => $this->tenTK,
-                'matkhau' => $this->matkhau,
+                'hoten' => $this->hoten,
                 'dienthoai' => $this->dienthoai,
                 'email' => $this->email,
+                'matkhau' => $this->matkhau,
                 'trangthai' => $this->trangthai,
-                'idNQ' => $this->idNQ
+                'idQuyen' => $this->idQuyen,
+                'hinhanh' => $this->hinhanh
             ];
         }
 
@@ -142,8 +202,8 @@
             if(!(self::isExist($this->idTK, $this->email))){
                 $fields = [];
 
-                if ($this->tenTK != '') {
-                    $fields[] = "tenTK = '" .$this->tenTK. "'";
+                if ($this->hoten != '') {
+                    $fields[] = "hoten = '" .$this->hoten. "'";
                 }
 
                 if ($this->email != '') {
@@ -174,60 +234,68 @@
 
     // Hết phần của Híuuu rồi nè
     
-        function setIdTK(int $idTK){
+        protected function setIdTK(int $idTK){
             $this->idTK = $idTK;
         }
 
-        function setTenTK(string $tenTK){
-            $this->tenTK = $tenTK;
+        protected function setHoten(string $hoten){
+            $this->hoten = $hoten;
         }
 
-        function setDienthoai(string $dienthoai){
+        protected function setDienthoai(string $dienthoai){
             $this->dienthoai = $dienthoai;
         }
 
-        function setEmail(string $email){
+        protected function setEmail(string $email){
             $this->email = $email;
         }
 
-        function setMatkhau(string $matkhau){
+        protected function setMatkhau(string $matkhau){
             $this->matkhau = $matkhau;
         }
 
-        function setTrangthai(int $trangthai){
+        protected function setTrangthai(int $trangthai){
             $this->trangthai = $trangthai;
         }
 
-        function setIdNQ(int $idNQ){
-            $this->idNQ = $idNQ;
+        protected function setIdQuyen(int $idQuyen){
+            $this->idQuyen = $idQuyen;
         }
 
-        function getIdTK(){
+        protected function setHinhanh(string $hinhanh){
+            $this->hinhanh = $hinhanh;
+        }
+
+        protected function getIdTK(){
             return $this->idTK;
         }
 
-        function getTenTK(){
-            return $this->tenTK;
+        protected function getHoten(){
+            return $this->hoten;
         }
 
-        function getDienthoai(){
+        protected function getDienthoai(){
             return $this->dienthoai;
         }
 
-        function getEmail(){
+        protected function getEmail(){
             return $this->email;
         }
 
-        function getTrangthai(){
+        protected function getTrangthai(){
             return $this->trangthai;
         }
 
-        function getMatkhau(){
+        protected function getMatkhau(){
             return $this->matkhau;
         }
 
-        function getIdNQ(){
-            return $this->idNQ;
+        protected function getIdQuyen(){
+            return $this->idQuyen;
+        }
+
+        protected function getHinhanh(){
+            return $this->hinhanh;
         }
     }
 ?>

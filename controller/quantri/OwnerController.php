@@ -1,95 +1,84 @@
 <?php
     include dirname(__FILE__).'/../BaseController.php';
-    include dirname(__FILE__).'/../../model/Account.php';
-    include dirname(__FILE__).'/../../model/Role.php';
+    include dirname(__FILE__).'/../../model/Owner.php';
+    // include dirname(__FILE__).'/../../model/Host.php';
 
-    class AccountController extends BaseController{
-        private $account;
+    class OwnerController extends BaseController{
+        private $owner;
 
         function __construct()
         {
             $this->folder = 'quantri';
-            $this->account= new Account();
+            $this->owner= new Owner();
         }
 
         function index(){
-            $accounts = Account::getAll();
-            $roles = Role::getAll();
+            $owners = Owner::getAll();
             $result = [
-                'paging' => $accounts,
-                'roles' => $roles
+                'paging' => $owners,
             ];
-            $this->render('Account', $result, true);
+            $this->render('Owner', $result, true);
         }
 
-        function add(){
-            $matkhau = password_hash($_POST['password'], PASSWORD_DEFAULT);
-            $this->account->nhap($_POST['username'], $_POST['userphone'], $_POST['usermail'], $matkhau, 1, $_POST['role-select']);
-            $req = $this->account->add();
-            if($req) echo json_encode(array('btn'=>'add', 'success'=>true));
-            else echo json_encode(array('btn'=>'add', 'success'=>false, 'msg'=>'Email đã tồn tại'));
+        // function add(){
+        //     $matkhau = password_hash($_POST['password'], PASSWORD_DEFAULT);
+        //     $this->owner->nhapOwner($_POST['username'], $_POST['userphone'], $_POST['usermail'], $matkhau, 1, $_POST['role-select'], $_POST['user_image']);
+        //     $req = $this->owner->add();
+        //     if($req) echo json_encode(array('btn'=>'add', 'success'=>true));
+        //     else echo json_encode(array('btn'=>'add', 'success'=>false, 'msg'=>'Email đã tồn tại'));
+        //     exit;
+        // }
+
+        function getComments() {
+            if (!isset($_POST['owner_id'])) {
+                echo json_encode(['success' => false, 'msg' => 'Thiếu owner_id']);
+                exit;
+            }
+    
+            $ownerId = (int)$_GET['owner_id'];
+            $comments = Owner::getCommentsByOwner($ownerId);
+    
+            if ($comments) {
+                echo json_encode(['success' => true, 'comments' => $comments]);
+            } else {
+                echo json_encode(['success' => false, 'msg' => 'Không tìm thấy bình luận']);
+            }
             exit;
         }
 
-        function openAddForm(){
-            $role = Role::getAllActive();
-            echo json_encode($role);
+        function getOwnerDetails() {
+            if (!isset($_POST['owner_id'])) {
+                echo json_encode(['success' => false, 'msg' => 'Thiếu owner_id']);
+                exit;
+            }
+            $ownerId = (int)$_POST['owner_id'];
+            $owner = Owner::findOwnerByID($ownerId);
+            if ($owner) {
+                $data = [
+                    'acc' => $owner[0]['account'],
+                    'sosao' => $owner[0]['sosao'],
+                    'nganhang' => $owner[0]['nganhang']
+                    ];
+                echo json_encode(['success' => true, 'data' => $data]);
+            } else {
+                echo json_encode(['success' => false, 'msg' => 'Không tìm thấy chủ homestay']);
+            }
             exit;
         }
 
-        function edit(){
-            $account = Account::findByID($_POST['account_id']);
-            $role = Role::getAllForAccount();
-            $list = [];
-            foreach($role as $item)
-                $list[] = $item->toArrayNQ();
-            if($account==null || empty($list)) $result = null;
-            else
-            $result = [
-                'account' => $account->toArray(),
-                'role' => $list
-            ];
-            echo json_encode($result);
-            exit;
-        }
-
-        function update(){
-            $trangthai = isset($_POST['status']) ? 1 : 0;
-            $this->account->nhap($_POST['username'], $_POST['userphone'], $_POST['usermail'], NULL, $trangthai, $_POST['role-select'], $_POST['account_id']);
-            $req = $this->account->update();
-            if($req) echo json_encode(array('btn'=>'update','success'=>true));
-            else echo json_encode(array('btn'=>'update','success'=>false, 'msg'=>'Email đã tồn tại'));
-            exit;
-        }
-
-        function search(){
-            $pageTitle = 'searchAccount';
+        function search() {
+            $pageTitle = 'searchOwner';
             $kyw = NULL;
-            $idNQ = NULL;
-            $trangthai = NULL;
-
-            if(isset($_GET['kyw']) && ($_GET['kyw']) != "") {
+    
+            if (isset($_GET['kyw']) && ($_GET['kyw']) != "") {
                 $kyw = $_GET['kyw'];
                 $pageTitle .= '&kyw='.$kyw;
             }
-
-            if(isset($_GET['select_role']) && $_GET['select_role'] != -1) {
-                $idNQ = $_GET['select_role'];
-                $pageTitle .= '&select_role='.$idNQ;
-            }
-
-            if(isset($_GET['status_select']) && $_GET['status_select'] != -1 ) {
-                $trangthai = $_GET['status_select'];
-                $pageTitle .= '&status_select='.$trangthai;
-            }
-
-            $roles = Role::getAll();
-
+    
             $result = [
-                'paging' => Account::search($kyw, $idNQ, $trangthai),
-                'roles' => $roles
+                'paging' => Owner::searchOwner($kyw),
             ];
-            $this->renderSearch('Account', $result, $pageTitle);
+            $this->renderSearch('Owner', $result, $pageTitle);
         }
 
         function checkAction($action){
@@ -97,33 +86,26 @@
                 case 'index':
                     $this->index();
                     break;
-
-                case 'open_add_form':
-                    $this->openAddForm();
-                    break;
-
-                case 'submit_btn_add':
-                    $this->add();
-                    break;
                 
-                case 'edit_data':
-                    $this->edit();
-                    break;
-
-                case 'submit_btn_update':
-                    $this->update();
-                    break;
-
                 case 'search':
                     $this->search();
                     break;
+
+                case 'getComments':
+                    $this->getComments();
+                    break;
+
+                case 'getOwnerDetails':
+                    $this->getOwnerDetails();
+                    break;
+
             }
         }
     }
 
-    $accountController = new AccountController();
-    if(isset($_GET['page']) && $_GET['page'] == 'searchAccount') $action = 'search';
+    $ownerController = new OwnerController();
+    if(isset($_GET['page']) && $_GET['page'] == 'searchOwner') $action = 'search';
     else if(!isset($_POST['action'])) $action = 'index';
     else $action = $_POST['action'];
-    $accountController->checkAction($action);
+    $ownerController->checkAction($action);
 ?>

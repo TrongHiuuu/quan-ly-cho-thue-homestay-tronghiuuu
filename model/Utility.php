@@ -20,7 +20,7 @@
 
             foreach($req as $item){
                 $utility = new Utility();
-                $utility->nhap($item['ten'], $item['icon'], $item['trangthai'], $item['idTI']);
+                $utility->nhap($item['tenTI'], $item['icon'], $item['trangthai'], $item['idTI']);
                 $list[] = $utility;
             }
             return $list;
@@ -43,7 +43,7 @@
         }
 
         static function isExist($idTI, $tenTI){
-            $sql = 'SELECT idTI FROM tienich WHERE ten= "'.$tenTI.'"';
+            $sql = 'SELECT idTI FROM tienich WHERE tenTI= "'.$tenTI.'"';
             if($idTI!=0) $sql.=' AND idTI!='.$idTI;
             $con = new Database();
             return ($con->getOne($sql))!=null;
@@ -55,7 +55,7 @@
             $req = $con->getOne($sql);
             if($req!=null){
                 $utility = new Utility();
-                $utility->nhap($req['ten'], $req['icon'], $req['trangthai'], $req['idTI']);
+                $utility->nhap($req['tenTI'], $req['icon'], $req['trangthai'], $req['idTI']);
                 return $utility;
             }
             return null;
@@ -63,7 +63,7 @@
 
         function add(){
             if(!(Utility::isExist($this->idTI, $this->tenTI))){
-                $sql = 'INSERT INTO tienich(ten, icon, trangthai) VALUES ("'.$this->tenTI.'", "'.$this->icon.'", '.$this->trangthai.')';
+                $sql = 'INSERT INTO tienich(tenTI, icon, trangthai) VALUES ("'.$this->tenTI.'", "'.$this->icon.'", '.$this->trangthai.')';
                 $con = new Database();
                 $con->execute($sql);
                 return true;
@@ -74,7 +74,7 @@
         function update(){
             if(!(Utility::isExist($this->idTI, $this->tenTI))){
                 $sql = 'UPDATE tienich
-                    SET ten = "'.$this->tenTI.'", trangthai = '.$this->trangthai.', icon = "'.$this->icon.'"
+                    SET tenTI = "'.$this->tenTI.'", trangthai = '.$this->trangthai.', icon = "'.$this->icon.'"
                     WHERE idTI = '.$this->idTI;
                 $con = new Database();
                 $con->execute($sql);
@@ -98,21 +98,6 @@
             }
             return $list;
         }
-
-        // static function getUtilityByIdBook($idSP) {
-        //     $sql = 'SELECT tienich.idTI, tenTI, tienich.trangthai
-        //             FROM tienich
-        //                 INNER JOIN SP_tienich on tienich.idTI = SP_tienich.idTI
-        //             WHERE SP_tienich.idSP='.$idSP.' AND tienich.trangthai=1';
-        //     $con = new Database();
-        //     $req = $con->getOne($sql);
-        //     if($req!=null){
-        //         $utility = new self();
-        //         $utility->nhap($req['tenTI'], $req['trangthai'], $req['idTI']);
-        //         return $utility;
-        //     }
-        //     return null;
-        // }
         
         function toArray() {
             return [

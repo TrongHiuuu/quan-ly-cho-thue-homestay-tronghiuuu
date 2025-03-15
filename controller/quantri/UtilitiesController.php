@@ -27,8 +27,19 @@
         }
 
         function edit(){
+
+            if (!isset($_POST['utility_id'])) {
+                echo json_encode(['success' => false, 'msg' => 'Thiếu utility_id']);
+                exit;
+            }
+            $utilityId = (int)$_POST['utility_id'];
             $utility = Utility::findByID($_POST['utility_id']);
-            echo json_encode($utility==null ? null: $utility->toArray());
+            if ($utility) {
+                $data = $utility->toArray();
+                echo json_encode(['success' => true, 'data' => $data]);
+            } else {
+                echo json_encode(['success' => false, 'msg' => 'Không tìm thấy chủ homestay']);
+            }
             exit;
         }
 

@@ -1,248 +1,145 @@
-const accountModal = document.getElementById('accountModal');
-accountModal.addEventListener('hidden.bs.modal', function() {
-    document.getElementById('accountForm').reset();
-    let textMessage = document.querySelectorAll('.text-message');
-    textMessage.forEach(element => {
-        element.textContent = '';
-    });
-    location.reload();
-});
-    // ========================== Validate Form ==============================
+// Owner.js
+document.addEventListener('DOMContentLoaded', () => {
+    const accountModal = new bootstrap.Modal(document.getElementById('accountModal'));
+    const positiveCommentsModal = new bootstrap.Modal(document.getElementById('positiveCommentsModal'));
+    const negativeCommentsModal = new bootstrap.Modal(document.getElementById('negativeCommentsModal'));
+    const detailButtons = document.querySelectorAll('.open-detail-modal');
+    let currentAccountId = null;
 
-// Lấy giá trị của DOM
-const fullname = document.querySelector("#username");
-const email = document.querySelector("#usermail");
-const phoneNumber = document.querySelector("#userphone");
-const password = document.querySelector("#password");
-
-const errorMessageFullname = document.querySelector(".user-name-msg");
-const errorMessageEmail = document.querySelector(".user-email-msg");
-const errorMessagePhoneNumber = document.querySelector(".user-phone-msg");
-const errorMessagePassword = document.querySelector(".user-password-msg");
-
-
-//Các function ValidateForm
-const validateFullname = () => {
-    let fullnameIsValid = false;
-    const regexFullName = /[a-zA-ZÀ-ỹ]+(\s[a-zA-ZÀ-ỹ]+){1,}$/;
-  
-    if(fullname.value.trim() === "") {
-      errorMessageFullname.innerText = "Họ và tên không được để trống";
-      fullnameIsValid = false;
-    } else if (!regexFullName.test(fullname.value.trim())) {
-      errorMessageFullname.innerText = "Họ và tên chỉ được bao gồm chữ cái và ký tự khoảng trắng (Ví dụ: Trần Đức Duy)"
-      fullnameIsValid = false;
-    } else {
-      errorMessageFullname.innerText = "";
-      fullnameIsValid = true;
-    }
-  
-    return fullnameIsValid;
-  }
-  
-  const validateEmail = () => {
-    let emailIsValid = false;
-    //Định dạng email
-    const regexEmail =
-      // /^(([A-Za-z0-9]+((\.|\-|\_|\+)?[A-Za-z0-9]?)*[A-Za-z0-9]+)|[A-Za-z0-9]+)@(([A-Za-z0-9]+)+((\.|\-|\_)?([A-Za-z0-9]+)+)*)+\.([A-Za-z]{2,})+$/;
-      /^(?=.{1,255}$)[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,6}$/;
-    if(email.value.trim() === "") {
-      errorMessageEmail.innerText = "Email không được để trống";
-      emailIsValid = false;
-    } else if(!regexEmail.test(email.value.trim())) {
-      errorMessageEmail.innerText = "Vui lòng nhập đúng định dạng của email (Ví dụ: abc@example.com)";
-      emailIsValid = false;
-    } else {
-      errorMessageEmail.innerText = "";
-      emailIsValid = true;
-    }
-    
-    return emailIsValid;
-  }
-  
-  const validatePhoneNumber = () => {
-    let phoneNumberIsValid = false;
-    //Định dạng số điện thoại
-    const regexPhoneNumber = /^0[0-9]{9}$/;
-  
-    if(phoneNumber.value.trim() === "") {
-      errorMessagePhoneNumber.innerText = "Số điện thoại không được để trống";
-      phoneNumberIsValid = false;
-    } else if (!regexPhoneNumber.test(phoneNumber.value.trim())) {
-      errorMessagePhoneNumber.innerText = "Vui lòng nhập đúng định dạng số điện thoại";
-      phoneNumberIsValid = false;
-    } else {
-      errorMessagePhoneNumber.innerText = "";
-      phoneNumberIsValid = true;
-    }
-  
-    return phoneNumberIsValid;
-  }
-  
-  const validatePassword = () => {
-    let passwordIsValid = false;
-    //Định dạng mật khẩu
-    const regexPassword = /^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)[A-Za-z\d@$!%*?&]{8,}$/;
-  
-    if(password.value.trim() === "") {
-      errorMessagePassword.innerText = "Mật khẩu không được để trống";
-      passwordIsValid = false;
-    } else if (!regexPassword.test(password.value.trim())) {
-      errorMessagePassword.innerText = "Mật khẩu phải có tối thiểu 8 ký tự, bao gồm ít nhất một chữ số, một kí tự in thường và một kí tự in hoa (Ví dụ: examPle2)";
-      passwordIsValid = false;
-    } else {
-      errorMessagePassword.innerText = "";
-      passwordIsValid = true;
-    }
-  
-    return passwordIsValid;
-  }
-  
-  
-  function validateFormAccount(isEdit){
-    let fullnameIsValid = validateFullname();
-    let emailIsValid = validateEmail();
-    let phoneNumberIsValid = validatePhoneNumber();
-    let passwordIsValid;
-    if(isEdit) passwordIsValid = true;
-    else passwordIsValid = validatePassword();
-
-    let formIsValid = fullnameIsValid &&
-                                emailIsValid &&
-                                phoneNumberIsValid &&
-                                passwordIsValid;
-    return formIsValid;
-  }
-
-// ======================== End Validate Form =============================
-
-$(document).ready(function() {
-    const modalTitle = document.getElementById('accountModalLabel');
-    const modalSaveBtn = document.getElementById('saveModalBtn');
-    var submit_btn = document.getElementById('submit_btn');
-    // open add form
-    $('.open_add_form').click(function() {
-        modalTitle.textContent = 'Thêm tài khoản';
-        modalSaveBtn.textContent = 'Thêm tài khoản';
-        $("#password").prop('disabled', false);
-        submit_btn.setAttribute('name', 'action');
-        submit_btn.setAttribute('value', 'submit_btn_add');
-        $.ajax({
-            url: '../controller/quantri/AccountController.php',
-            type: 'POST',
-            data: {
-                'action': 'open_add_form',
-            },
-            success: function(response) {
-                console.log(response);
-                const data = JSON.parse(response);
-                const selectElement = $('#role-select');
-
-                selectElement.empty();
-
-                data.forEach(item => {
-                    selectElement.append(new Option(item.tenNQ, item.idNQ));
-                });
-                document.getElementById('accountForm').querySelector('.edit').style.display = 'none';
-            },
-        });
-    });
-   // open edit form
-   $('.open_edit_form').click(function(e) {
+    // Xử lý khi mở modal thông tin chi tiết (Modal cha)
+    $('.open_detail_form').click(function(e) {
         e.preventDefault();
-        var account_id = $(this).closest('tr').find('.account_id').text();
-        modalTitle.textContent = 'Chỉnh sửa tài khoản';
-        modalSaveBtn.textContent = 'Lưu thay đổi';
-        $("#password").prop('disabled', true);
-        submit_btn.setAttribute('name', 'action');
-        submit_btn.setAttribute('value', 'submit_btn_update');
+        currentAccountId = $(this).closest('tr').find('.account_id').text();
+
         $.ajax({
-            url: '../controller/quantri/AccountController.php',
+            url: '../controller/quantri/OwnerController.php',
             type: 'POST',
             data: {
-                'action': 'edit_data',
-                'account_id': account_id,
+                'action': 'getOwnerDetails',
+                'owner_id': currentAccountId
             },
-            success: function(response) {
-                console.log(response);
+            success: function(response){
                 const obj = JSON.parse(response);
-                const account = obj.account;
-                const role = obj.role;
-                $('#account_id').val(account.idTK);
-                $('#username').val(account.tenTK);
-                $('#usermail').val(account.email);
-                $('#userphone').val(account.dienthoai);
-                
-                if(parseInt(account.trangthai)){
-                    $('#status').prop('checked', true);
-                    $('#switch-label').text('Đang hoạt động');
-                } 
-                else {
-                    $('#status').prop('checked', false);
-                    $('#switch-label').text('Bị khóa');
+                if(obj.success == true) {
+                    console.log(obj);
+                    $('#detail-id').text(obj.data.acc.idTK);
+                    $('#detail-name').text(obj.data.acc.hoten);
+                    $('#detail-phone').text(obj.data.acc.dienthoai);
+                    $('#detail-email').text(obj.data.acc.email);
+                    $('#detail-payment').text(obj.data.nganhang);
+                    $('#detail-rating').text(obj.data.sosao);
+                    $('#detail-status').text(obj.data.acc.trangthai);
+                    $('#detail-image').html(obj.data.acc.hinhanh 
+                        ? `<img src="${obj.data.acc.hinhanh}" alt="Hình ảnh" style="max-width: 100px;">` 
+                        : 'Chưa có');
                 }
-                // phan quyen
-                const selectElement = $('#role-select');
-
-                selectElement.empty();
-
-                role.forEach(item => {
-                    selectElement.append(new Option(item.tenNQ, item.idNQ));
-                });
-
-                selectElement.val(account.idNQ);
-                document.getElementById('accountForm').querySelector('.edit').style.display = 'flex';
-            },
+                // $('#accountModal').modal('show');
+                // const obj = response.data;
+            }
         });
     });
-    
-    $('#accountForm').submit(function(event) {
-        event.preventDefault();
-        let isEdit = false;
-        if(submit_btn.value == 'submit_btn_update') isEdit=true;
+    // detailButtons.forEach(button => {
+    //     button.addEventListener('click', (e) => {
+    //         const row = e.target.closest('tr');
+    //         const accountId = row.querySelector('.account_id').textContent;
+    //         const accountName = row.querySelector('.account_name').textContent;
+    //         const accountPhone = row.querySelector('.account_number').textContent;
+    //         const accountPayment = row.querySelector('.account_payment_method').textContent;
+    //         const accountStatus = row.querySelector('.bg-success') ? 'Hoạt động' : 'Bị khóa';
+    //         const accountRating = row.querySelector('.account_rating').textContent;
 
-        // Nếu không có lỗi, gửi dữ liệu
-        if (validateFormAccount(isEdit)) {
-            var formData = new FormData($('#accountForm')[0]);
-            
-            $.ajax({
-                url: '../controller/quantri/AccountController.php', 
-                type: 'POST',
-                data: formData,
-                processData: false,
-                contentType: false,
-                success: function(response) {
-                    console.log(response);
-                    const obj = JSON.parse(response);
-                    if (obj.success) {
-                        if (obj.btn === 'add') {
-                            toast({
-                                title: 'Thành công',
-                                message: 'Thêm tài khoản thành công',
-                                type: 'success',
-                                duration: 3000
-                            });
-                        } else {
-                            toast({
-                                title: 'Thành công',
-                                message: 'Cập nhật tài khoản thành công',
-                                type: 'success',
-                                duration: 3000
-                            });
-                        }
-                    } 
-                    else {
-                            toast({
-                                title: 'Lỗi',
-                                message: obj.msg,
-                                type: 'error',
-                                duration: 3000
-                            });
-                        }
-                },
-            });
-        }
+    //         // Sử dụng AJAX để lấy chi tiết owner
+    //         $.ajax({
+    //             url: '../controller/quantri/OwnerController.php',
+    //             type: 'GET',
+    //             data: {
+    //                 action: 'getOwnerDetails',
+    //                 owner_id: accountId
+    //             },
+    //             dataType: 'json', // Mong đợi phản hồi là JSON
+    //             success: function(data) {
+    //                 document.getElementById('detail-id').textContent = accountId;
+    //                 document.getElementById('detail-name').textContent = accountName;
+    //                 document.getElementById('detail-phone').textContent = accountPhone;
+    //                 document.getElementById('detail-payment').textContent = accountPayment;
+    //                 document.getElementById('detail-status').textContent = accountStatus;
+    //                 document.getElementById('detail-rating').textContent = accountRating;
+    //                 document.getElementById('detail-email').textContent = data.email || 'Chưa có';
+    //                 document.getElementById('detail-image').innerHTML = data.hinhanh 
+    //                     ? `<img src="${data.hinhanh}" alt="Hình ảnh" style="max-width: 100px;">` 
+    //                     : 'Chưa có';
 
+    //                 currentAccountId = accountId;
+    //                 accountModal.show();
+    //             },
+    //             error: function(xhr, status, error) {
+    //                 console.error('Lỗi khi lấy chi tiết:', status, error);
+    //                 console.log('Response text:', xhr.responseText); // In dữ liệu thô để debug
+    //             }
+    //         });
+    //     });
+    // });
+
+    // Xử lý khi mở modal bình luận tích cực
+    document.getElementById('open-positive-btn').addEventListener('click', () => {
+        fetchComments(currentAccountId, true);
+        accountModal.hide();
+        positiveCommentsModal.show();
     });
 
+    // Xử lý khi mở modal bình luận tiêu cực
+    document.getElementById('open-negative-btn').addEventListener('click', () => {
+        fetchComments(currentAccountId, false);
+        accountModal.hide();
+        negativeCommentsModal.show();
+    });
+
+    // Khi đóng modal con, hiển thị lại modal cha
+    document.getElementById('positiveCommentsModal').addEventListener('hidden.bs.modal', () => {
+        accountModal.show();
+    });
+
+    document.getElementById('negativeCommentsModal').addEventListener('hidden.bs.modal', () => {
+        accountModal.show();
+    });
+
+    // Hàm lấy và hiển thị bình luận
+    function fetchComments(ownerId, isPositive) {
+        $.ajax({
+            url: '../controller/quantri/OwnerController.php',
+            type: 'POST',
+            data: {
+                action: 'getComments',
+                owner_id: ownerId
+            },
+            success: function(response) {
+                obj = JSON.parse(response);
+                if(!obj.success) {
+                    const filteredComments = obj.comments.filter(comment => 
+                        isPositive ? comment.rating >= 3 : comment.rating < 3
+                    );
+                    const container = isPositive 
+                        ? document.getElementById('positive-comments') 
+                        : document.getElementById('negative-comments');
+    
+                    container.innerHTML = filteredComments.length > 0
+                        ? filteredComments.map(c => `
+                            <div class="comment mb-2 p-2 border rounded">
+                                <p><strong>Phòng:</strong> ${c.room_name} | <strong>Sao:</strong> ${c.rating}</p>
+                                <p>${c.content}</p>
+                            </div>
+                        `).join('')
+                        : `<p>Không có bình luận ${isPositive ? 'tích cực' : 'tiêu cực'}.</p>`;
+                }
+            },
+            error: function(xhr, status, error) {
+                console.error('Lỗi khi lấy bình luận:', status, error);
+                console.log('Response text:', xhr.responseText); // In dữ liệu thô để debug
+                const container = isPositive 
+                    ? document.getElementById('positive-comments') 
+                    : document.getElementById('negative-comments');
+                container.innerHTML = 'Lỗi khi tải dữ liệu.';
+            }
+        });
+    }
 });

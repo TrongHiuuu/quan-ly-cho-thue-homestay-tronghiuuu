@@ -52,26 +52,28 @@ $(document).ready(function() {
             },
             success: function(response){
                 const obj = JSON.parse(response);
-                console.log(obj);
-                $('#utility_id').val(obj.idTI);
-                $('#utility_name').val(obj.tenTI);
-                $('#utility_icon').val(obj.icon || '');
-                /*
-                    Chỗ này cố tình sử dụng cặp `` thay vì ' ', bởi nếu sử dụng cặp
-                    dấu nháy đơn thông thường thì ${obj.icon || ''} sẽ được hiểu cũng là một string
-                    Nếu sử dụng `` thì ta có thể thay data của biến vào chuỗi như bình thường
-                    (chèn biến động)
-                */
-                $('#selected-icon').html(`<i class="${obj.icon || ''} fs-3"></i>`);
-                if(parseInt(obj.trangthai)){
-                    $('#status').prop('checked', true);
-                    $('#switch-label').text('Đang hoạt động');
+                if (obj.success) {
+                    console.log(obj.data);
+                    $('#utility_id').val(obj.data.idTI);
+                    $('#utility_name').val(obj.data.tenTI);
+                    $('#utility_icon').val(obj.data.icon || '');
+                    /*
+                        Chỗ này cố tình sử dụng cặp `` thay vì ' ', bởi nếu sử dụng cặp
+                        dấu nháy đơn thông thường thì ${obj.icon || ''} sẽ được hiểu cũng là một string
+                        Nếu sử dụng `` thì ta có thể thay data của biến vào chuỗi như bình thường
+                        (chèn biến động)
+                    */
+                    $('#selected-icon').html(`<i class="${obj.data.icon || ''} fs-3"></i>`);
+                    if(parseInt(obj.data.trangthai)){
+                        $('#status').prop('checked', true);
+                        $('#switch-label').text('Đang hoạt động');
+                    }
+                    else {
+                        $('#status').prop('checked', false);
+                        $('#switch-label').text('Bị khóa');
+                    }
+                    document.getElementById('utilityForm').querySelector('.edit').style.display = 'flex';
                 }
-                else {
-                    $('#status').prop('checked', false);
-                    $('#switch-label').text('Bị khóa');
-                }
-                document.getElementById('utilityForm').querySelector('.edit').style.display = 'flex';
             },
         });
     });

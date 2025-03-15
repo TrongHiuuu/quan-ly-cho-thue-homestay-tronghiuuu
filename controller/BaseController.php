@@ -11,7 +11,7 @@
             if(is_file($view_file)){
                 if($paging){
                     $paging = new Pagination($this->folder, strtolower($file), $result['paging']);
-                    $pagingButton = $paging->paging($this->folder);
+                    $pagingButton = $paging->paging();
                 }
                 require($view_file);
             }
