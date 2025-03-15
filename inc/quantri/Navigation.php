@@ -43,6 +43,12 @@
                             </a>
                         </li>
                         <li class="nav-item sidebar-item">
+                            <a href="index.php?page=booking" class="nav-link text-black fs-5 align-items-center">
+                                <i class="fa-regular fa-receipt me-3"></i>
+                                Quản lý đặt phòng
+                            </a>
+                        </li>
+                        <li class="nav-item sidebar-item">
                             <a href="index.php?page=commission" class="nav-link text-black fs-5 align-items-center">
                                 <i class="fa-regular fa-money-check-dollar me-3"></i>
                                 Quản lý phí hoa hồng

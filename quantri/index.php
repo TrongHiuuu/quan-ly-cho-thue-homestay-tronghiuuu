@@ -97,6 +97,9 @@ if(isset($_GET['page']) && ($_GET['page'] !== "")){
             case 'utilities':
                 include '../controller/quantri/UtilitiesController.php';
                 break;
+            case 'booking':
+                include '../controller/quantri/BookingController.php';
+                break;
             case 'commission':
                 include '../controller/quantri/CommissionController.php';
                 break;

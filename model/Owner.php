@@ -1,6 +1,6 @@
 <?php
-include dirname(__FILE__).'/Account.php';
-    class Owner extends Account{
+include dirname(__FILE__).'/Customer.php';
+    class Owner extends Customer{
         private string $sodu;
         private ?string $stk;
         private int $idNH;
@@ -127,34 +127,23 @@ include dirname(__FILE__).'/Account.php';
         }
         static function getAll() {
             $list = [];
-            $sql = 'SELECT hoten, dienthoai, email, matkhau, trangthai, taikhoan.idQuyen, hinhanh, taikhoan.idTK AS idTK, sodu, stk, idNH
-            FROM taikhoan 
-            LEFT JOIN dm_quyen ON taikhoan.idQuyen = dm_quyen.idQuyen 
-            LEFT JOIN host ON taikhoan.idTK = host.idTK
-            WHERE taikhoan.idQuyen = 2';
+            $sql ='SELECT t.*, h.sodu, h.stk, h.idNH, AVG(dg.sosao) AS sosao, nh.tenNH
+                        FROM taikhoan t
+                        LEFT JOIN host h ON t.idTK = h.idTK
+                        LEFT JOIN datphong dp ON t.idTK = dp.idTK
+                        LEFT JOIN danhgia dg ON dp.idDG = dg.idDG
+                        LEFT JOIN nganhang nh ON h.idNH = nh.idNH
+                        WHERE t.idQuyen = 2
+                        GROUP BY t.idTK';
             $con = new Database();
             $req = $con->getAll($sql);
             foreach($req as $item){
                 $account = new self();
                 $account->nhapOwner($item['hoten'], $item['dienthoai'], $item['email'], $item['matkhau'], $item['trangthai'], $item['idQuyen'], $item['hinhanh'], $item['sodu'], $item['stk'], $item['idNH'], $item['idTK']);
-                
-                //Lấy số sao trung bình
-                $sql = 'SELECT AVG(sosao) AS sosao
-                    FROM danhgia
-                    LEFT JOIN datphong ON datphong.idDG = danhgia.idDG
-                    WHERE datphong.idTK='.$item['idTK'];
-                $sosao = $con->getOne($sql)['sosao'];
-
-                //Lấy tên ngân hàng
-                $sql = 'SELECT nganhang.tenNH AS tenNH
-                    FROM nganhang
-                    LEFT JOIN host ON host.idNH = nganhang.idNH
-                    WHERE idTK='.$item['idTK'];
-                $nganhang = $con->getOne($sql)['tenNH'];
                 $list[] = [
                     'account' => $account->toArray(),
-                    'sosao' => $sosao,
-                    'nganhang' => $nganhang
+                    'sosao' => $item['sosao'],
+                    'nganhang' => $item['tenNH']
                 ];
             }
             return $list;
@@ -185,35 +174,25 @@ include dirname(__FILE__).'/Account.php';
                 return $list;
         }
 
-        static function findOwnerByID($idTK){
-            $sql = 'SELECT hoten, dienthoai, email, matkhau, trangthai, taikhoan.idQuyen, hinhanh, taikhoan.idTK AS idTK, sodu, stk, idNH
-            FROM taikhoan 
-            LEFT JOIN dm_quyen ON taikhoan.idQuyen = dm_quyen.idQuyen 
-            LEFT JOIN host ON taikhoan.idTK = host.idTK
-            WHERE taikhoan.idTK='.$idTK;
+        static function findByID($idTK){
+            $sql ='SELECT t.*, h.sodu, h.stk, h.idNH, AVG(dg.sosao) AS sosao, nh.tenNH
+                        FROM taikhoan t
+                        LEFT JOIN host h ON t.idTK = h.idTK
+                        LEFT JOIN datphong dp ON t.idTK = dp.idTK
+                        LEFT JOIN danhgia dg ON dp.idDG = dg.idDG
+                        LEFT JOIN nganhang nh ON h.idNH = nh.idNH
+                        WHERE t.idQuyen = 2 AND t.idTK = '.$idTK.'
+                        GROUP BY t.idTK';
             $con = new Database();
             $req = $con->getOne($sql);
             if($req!=null){
                 $account = new self();
                 $account->nhapOwner($req['hoten'], $req['dienthoai'], $req['email'], $req['matkhau'], $req['trangthai'], $req['idQuyen'], $req['hinhanh'], $req['sodu'], $req['stk'], $req['idNH'], $req['idTK']);
                 
-                //Lấy số sao trung bình
-                $sql = 'SELECT AVG(sosao) AS sosao
-                    FROM danhgia
-                    LEFT JOIN datphong ON datphong.idDG = danhgia.idDG
-                    WHERE datphong.idTK='.$req['idTK'];
-                $sosao = $con->getOne($sql)['sosao'];
-
-                //Lấy tên ngân hàng
-                $sql = 'SELECT nganhang.tenNH AS tenNH
-                    FROM nganhang
-                    LEFT JOIN host ON host.idNH = nganhang.idNH
-                    WHERE idTK='.$req['idTK'];
-                $nganhang = $con->getOne($sql)['tenNH'];
                 $list[] = [
                     'account' => $account->toArray(),
-                    'sosao' => $sosao,
-                    'nganhang' => $nganhang
+                    'sosao' => $req['sosao'],
+                    'nganhang' => $req['tenNH']
                 ];
 
                 return $list;
@@ -221,12 +200,17 @@ include dirname(__FILE__).'/Account.php';
             return null;
         }
 
-        static function getCommentsByOwner(int $idTK) {
-            $sql = 'SELECT sanpham.tieude AS room_name, danhgia.idNH AS rating, danhgia.binhluan AS content 
+        static function getCommentsByOwner(int $idTK, bool $isPositive) {
+            $sql = 'SELECT sanpham.tieude AS room_name, danhgia.sosao AS rating, danhgia.binhluan AS content 
                     FROM sanpham 
                     LEFT JOIN datphong ON sanpham.idSP = datphong.idSP 
                     LEFT JOIN danhgia ON datphong.idDG = danhgia.idDG 
                     WHERE sanpham.idTK = ' . $idTK . ' AND danhgia.idDG IS NOT NULL';
+
+            if ($isPositive) {
+                $sql .= $isPositive ? ' AND danhgia.sosao >= 3' : ' AND danhgia.sosao < 3';
+            }
+
             $con = new Database();
             $req = $con->getAll($sql);
     
@@ -238,6 +222,7 @@ include dirname(__FILE__).'/Account.php';
                     'content' => $item['content'] ?: 'Không có nội dung'
                 ];
             }
+            
             return $comments;
         }
 

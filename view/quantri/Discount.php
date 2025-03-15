@@ -44,6 +44,7 @@
                     <thead class="table-header">
                         <tr>
                             <th scope="col">Mã giảm giá</th>
+                            <th>Tên mã</th>
                             <th>Phần trăm giảm</th>
                             <th>Ngày bắt đầu</th>
                             <th>Ngày kết thúc</th>
@@ -64,6 +65,7 @@
                     ?>
                         <tr class="discount_row">
                             <td class="discount_id"><?=$discount->getIdMGG()?></td>
+                            <td class="discount_name"><?=$discount->getTenMGG()?></td>
                             <td class="discount_percentage"><?=$discount->getPhantram()?></td>
                             <td class="discount_start_date"><?=$discount->getNgaybatdau()?></td>
                             <td class="discount_end_date"><?=$discount->getNgayketthuc()?></td>
@@ -89,19 +91,21 @@
                                 <?php
                                 if($discount->getTrangthai() == 'cdr'){
                                 ?>
-                                <button class="btn fs-5 open_edit_form"
-                                    data-bs-toggle="modal"
-                                    data-bs-target="#discountModal"
-                                >
-                                <i class="fa-regular fa-pen-to-square"></i>
-                                </button>
-                                    <button class="btn fs-5 lock_discount">
+                                    <button class="btn fs-5 open_edit_form"
+                                        data-bs-toggle="modal"
+                                        data-bs-target="#discountModal"
+                                    >
+                                    <i class="fa-regular fa-pen-to-square"></i>
+                                    </button>
+                                <?php
+                                }
+                                ?>
+                                <?php if($discount->getTrangthai() == 'cdr' || $discount->getTrangthai() == 'hh'){ ?>
+                                    <button class="btn fs-5 remove_discount">
                                         <i class="fa-regular fa-trash"></i>
                                     </button>
+                                <?php } ?>
                             </td>
-                            <?php
-                                }
-                            ?>
                         </tr>
                         <?php 
                             }
@@ -140,9 +144,16 @@
                     <input type="hidden" name="discount_id" id="discount_id">
                     <div class="modal-body">
                         <div class="row mb-3">
+                            <label for="discount-name" class="col-form-label col-sm-4">Tên mã</label>
+                            <div class="col">
+                                <input type="text" name="discount-name" class="form-control" id="discount-name">
+                                <span class="text-message discount-name-msg"></span>
+                            </div>
+                        </div>
+                        <div class="row mb-3">
                             <label for="discount-percent" class="col-form-label col-sm-4">Phần trăm giảm</label>
                             <div class="col">
-                                <input type="number" min="1" max="100" name="discount-percent" class="form-control" id="discount-percent">
+                                <input type="number" min="1" max="100" step="0.01" name="discount-percent" class="form-control" id="discount-percent">
                                 <span class="text-message discount-percent-msg"></span>
                             </div>
                         </div>
@@ -169,6 +180,33 @@
             </div>
         </div>
     </div>
+    <!-- Modal Xóa Mã Giảm Giá -->
+<div class="modal fade" id="deleteDiscountModal" tabindex="-1" aria-labelledby="deleteDiscountModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="deleteDiscountModalLabel">Xác nhận xóa mã giảm giá</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form id="deleteDiscountForm">
+                <div class="modal-body">
+                    <input type="hidden" name="discount_id" id="discount_id">
+                    <p>
+                        Mã giảm giá: <span id="discount_name" class="fw-bold"></span>
+                    </p>
+                    <p>
+                        Phần trăm giảm: <span id="discount_percentage" class="fw-bold"></span>
+                    </p>
+                    <p id="deleteMessage" class="fw-bold"></p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                    <button type="submit" class="btn btn-danger">Xác nhận</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
     <!-- ... -->
 
     <!-- Link JS ở chỗ này nè!!! -->

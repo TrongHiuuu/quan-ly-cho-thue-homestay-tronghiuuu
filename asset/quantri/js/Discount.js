@@ -17,17 +17,30 @@ document.getElementById('discountModal').addEventListener('hidden.bs.modal', fun
 /* function validate discount form */
 function formValidateDiscount() {
      // validate form
+    var tenMGG = $('#discountForm input[name="discount-name"]').val();
     var phantram = $('#discountForm input[name="discount-percent"]').val();
     var ngaybatdau = $('#discountForm input[name="discount-date-start"]').val();
     var ngayketthuc = $('#discountForm input[name="discount-date-end"]').val();
 
+    var discount_name_msg = $('.discount-name-msg');
     var discount_percent_msg = $('.discount-percent-msg');
     var discount_date_start_msg = $('.discount-date-start-msg');
     var discount_date_end_msg = $('.discount-date-end-msg');
     //Kiểm tra hợp lệ
     var curr_date = new Date();
-    //phantram
+   
+    //Tên mã giảm giá
+    const tenMGGRegex = /^[a-zA-Z0-9]+$/; //Chỉ bao gồm chữ cái và số
+    if(tenMGG == ""){
+        discount_name_msg.html("Tên mã không được để trống");
+        return false;
+    }
+    if(!tenMGGRegex.test(tenMGG)) { //Nếu tên mã giảm giá không khớp với regex
+        discount_name_msg.html("Tên mã chỉ bao gồm chữ cái và số");
+        return false;
+    }
 
+    //phantram
     if(phantram == ""){
         discount_percent_msg.html("Phần trăm không được để trống");
         return false;
@@ -53,13 +66,13 @@ function formValidateDiscount() {
         return false;
     }
 
-    if(start <= curr_date){
-        discount_date_start_msg.html( "Ngày bắt đầu phải lớn hơn ngày hiện tại!");
+    if(start < curr_date){
+        discount_date_start_msg.html( "Ngày bắt đầu phải lớn hơn hoặc bằng ngày hiện tại!");
         return false;
     }
 
-    if(ngaybatdau >= ngayketthuc){
-        discount_date_end_msg.html("Ngày kết thúc phải lớn hơn bắt đầu!");
+    if(ngaybatdau > ngayketthuc){
+        discount_date_end_msg.html("Ngày kết thúc phải lớn hơn hoặc bằng bắt đầu!");
         return false;
     }
 
@@ -87,6 +100,7 @@ $(document).ready(function() {
         e.preventDefault();
 
         var discount_id = $(this).closest('tr').find('.discount_id').text();
+        $('#discount_id').val(discount_id);
         modalTitle.textContent = 'Sửa mã giảm giá';
         modalSaveBtn.textContent = 'Lưu thay đổi';
         submit_btn.setAttribute('name', 'action');
@@ -101,7 +115,7 @@ $(document).ready(function() {
             success: function(response){
                 console.log(response);
                 const obj = JSON.parse(response);
-                $('#discountForm input[name="discount_id"]').val(obj.idMGG);
+                $('#discountForm input[name="discount-name"]').val(obj.tenMGG);
                 $('#discountForm input[name="discount-percent"]').val(obj.phantram);
                 $('#discountForm input[name="discount-date-start"]').val(obj.ngaybatdau);
                 $('#discountForm input[name="discount-date-end"]').val(obj.ngayketthuc);
@@ -146,14 +160,14 @@ $(document).ready(function() {
                         if(obj.btn == 'add'){
                             toast({
                                 title: 'Lỗi',
-                                message: 'Thêm mã giảm giá thất bại',
+                                message: obj.message || 'Thao tác thất bại',
                                 type: 'error',
                                 duration: 3000
                             });
                         } else {
                             toast({
                                 title: 'Lỗi',
-                                message: 'Cập nhật mã giảm giá thất bại',
+                                message: obj.message || 'Thao tác thất bại',
                                 type: 'error',
                                 duration: 3000
                             });
@@ -165,31 +179,66 @@ $(document).ready(function() {
     });
         /* update data */
 
-    /* Start: lock */
-    $(document).on('click', '.lock_discount', function(e) {
-        // Display the form as a pop-up
+    // Khi nhấn nút xóa, hiển thị modal xác nhận xóa
+    $(document).on('click', '.remove_discount', function(e) {
+        e.preventDefault();
         var discount_id = $(this).closest('tr').find('.discount_id').text();
-        var discount_status = $(this).closest('tr').find('.discount_status');
-        $.ajax({
-            url: '../controller/quantri/DiscountController.php', // Replace with the actual PHP endpoint to fetch discount details
-            type: 'POST',
-            data: {
-                'action': 'lock_discount',
-                'discount_id': discount_id,
-            },
-            success: function(response){
-                const obj = JSON.parse(response);
-                if(obj.success){
-                    toast({
-                        title: 'Thành công',
-                        message: 'Hủy mã giảm giá thành công',
-                        type: 'success',
-                        duration: 3000
-                    });
+        var discount_name = $(this).closest('tr').find('.discount_name').text();
+        var discount_percentage = $(this).closest('tr').find('.discount_percentage').text();
+
+        // Cập nhật nội dung modal
+        $('#discount_id').val(discount_id);
+        $('#discount_name').text(discount_name);
+        $('#discount_percentage').text(discount_percentage);
+        var message = 'Bạn có chắc chắn muốn xóa vĩnh viễn mã giảm giá này? Hành động này KHÔNG THỂ HOÀN TÁC.';
+        $('#deleteMessage').text(message);
+        // Mở modal
+        $('#deleteDiscountModal').modal('show');
+
+        //Khi xác nhận xóa, gửi yêu cầu xóa qua ajax
+        $('#deleteDiscountForm').submit(function(e) {
+            e.preventDefault();
+            var discount_id = $('#discount_id').val();
+            console.log(discount_id);
+
+            $.ajax({
+                url: '../controller/quantri/DiscountController.php',
+                type: 'POST',
+                data: {
+                    'action': 'remove_discount',
+                    'discount_id': discount_id,
+                },
+                success: function(response){
+                    const obj = JSON.parse(response);
+                    if(obj.success){
+                        // Lưu trạng thái thành công vào sessionStorage
+                        sessionStorage.setItem('deleteSuccess', obj.message || 'Thao tác thành công');
+                        // Reload trang
                     location.reload();
-                }
-            },
+                    } else {
+                        toast({
+                            title: 'Lỗi',
+                            message: obj.message || 'Thao tác thất bại',
+                            type: 'error',
+                            duration: 3000
+                        });
+                    }
+                },
+            });
         });
-   });
-    /* End: lock */
+    });
+
+    // Kiểm tra trạng thái sau khi trang reload
+    if(sessionStorage.getItem('deleteSuccess')) { 
+        //Nếu trạng thái sau reload là xóa MGG, hiển thị thông báo
+        //Sau đó loại bỏ trạng thái ra khỏi sessionStorage
+        toast({
+            title: 'Thành công',
+            message: sessionStorage.getItem('deleteSuccess'),
+            type: 'success',
+            duration: 3000
+        });
+        sessionStorage.removeItem('deleteSuccess'); // Loại bỏ trạng thái ra khỏi sessionStorage sau khi đã hiển thị
+    }
+    
 });

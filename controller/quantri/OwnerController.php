@@ -35,10 +35,17 @@
                 exit;
             }
     
-            $ownerId = (int)$_GET['owner_id'];
-            $comments = Owner::getCommentsByOwner($ownerId);
+            $ownerId = (int)$_POST['owner_id'];
+            $isPositive = $_POST['is_positive'];
+
+            if ($isPositive === null) {
+                echo json_encode(['success' => false, 'msg' => 'Thiếu tham số is_positive']);
+                exit;
+            }
+
+            $comments = Owner::getCommentsByOwner($ownerId, $isPositive);
     
-            if ($comments) {
+            if ($comments !== null && count($comments) > 0) {
                 echo json_encode(['success' => true, 'comments' => $comments]);
             } else {
                 echo json_encode(['success' => false, 'msg' => 'Không tìm thấy bình luận']);
@@ -52,7 +59,8 @@
                 exit;
             }
             $ownerId = (int)$_POST['owner_id'];
-            $owner = Owner::findOwnerByID($ownerId);
+            $owner = Owner::findByID($ownerId);
+            unset($owner['matkhau']);
             if ($owner) {
                 $data = [
                     'acc' => $owner[0]['account'],

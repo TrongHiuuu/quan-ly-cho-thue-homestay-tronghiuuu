@@ -1,59 +1,51 @@
 <?php
     include dirname(__FILE__).'/../BaseController.php';
-    include dirname(__FILE__).'/../../model/Category.php';
-    class CategoryController extends BaseController{
-        private $category;
+    include dirname(__FILE__).'/../../model/Customer.php';
+    class CustomerController extends BaseController{
+        private $customer;
 
         function __construct()
         {
             $this->folder = 'quantri';
-            $this->category = new Category();
+            $this->customer = new Customer();
         }
 
         function index(){
-            $categories = Category::getAll();
+            $customers = Customer::getAll();
+            //var_dump($customers);
             $result = [
-                'paging' => $categories
+                'paging' => $customers
             ];
-            $this->render('Category', $result, true);
+            $this->render('Customer', $result, true);
         }
 
-        function add(){
-            $this->category->nhap($_POST['category_name'], 1);
-            $req = $this->category->add();
-            if($req) echo json_encode(array('btn'=>'add', 'success'=>true));
-            else echo json_encode(array('btn'=>'add', 'success'=>false));
-            exit;
-        }
-
-        function edit(){
-            $category = Category::findByID($_POST['category_id']);
-            echo json_encode($category==null ? null: $category->toArray());
-            exit;
-        }
-
-        function update(){
-            $idTL = $_POST['category_id'];
-            $tenTL = $_POST['category_name'];
-            $trangthai = isset($_POST['status']) ? 1 : 0;
-            $this->category->nhap($tenTL, $trangthai, $idTL);
-            $req = $this->category->update();
-            if($req) echo json_encode(array('btn'=>'update','success'=>true));
-            else echo json_encode(array('btn'=>'update','success'=>false));
+        function getCustomerDetails() {
+            if (!isset($_POST['customer_id'])) {
+                echo json_encode(['success' => false, 'msg' => 'Thiếu customer_id']);
+                exit;
+            }
+            $customerId = (int)$_POST['customer_id'];
+            $customer = Customer::findByID($customerId);
+            unset($customer['matkhau']);
+            if ($customer !== null) {
+                echo json_encode(['success' => true, 'data' => $customer]);
+           } else {
+                echo json_encode(['success' => false, 'msg' => 'Không tìm thấy khách hàng']);
+            }
             exit;
         }
 
         function search(){
-            $pageTitle = 'searchCategory';
+            $pageTitle = 'searchCustomer';
             $kyw = NULL;
             if(isset($_GET['kyw']) && isset($_GET['kyw']) != "") {
                 $kyw = $_GET['kyw'];
                 $pageTitle .= '&kyw='.$kyw;
             }
             $result = [
-                'paging' => Category::search($kyw)
+                'paging' => Customer::search($kyw)
             ];
-            $this->renderSearch('Category', $result, $pageTitle);
+            $this->renderSearch('Customer', $result, $pageTitle);
         }
 
         function checkAction($action){
@@ -62,16 +54,8 @@
                     $this->index();
                     break;
 
-                case 'submit_btn_add':
-                    $this->add();
-                    break;
-                
-                case 'edit_data':
-                    $this->edit();
-                    break;
-
-                case 'submit_btn_update':
-                    $this->update();
+                case 'getCustomerDetails':
+                    $this->getCustomerDetails();
                     break;
 
                 case 'search':
@@ -81,9 +65,9 @@
         }
     }
 
-    $categoryController = new CategoryController();
-    if(isset($_GET['page']) && $_GET['page'] == 'searchCategory') $action = 'search';
+    $customerController = new CustomerController();
+    if(isset($_GET['page']) && $_GET['page'] == 'searchCustomer') $action = 'search';
     else if(!isset($_POST['action'])) $action = 'index';
     else $action = $_POST['action'];
-    $categoryController->checkAction($action);
+    $customerController->checkAction($action);
 ?>

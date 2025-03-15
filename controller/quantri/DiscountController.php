@@ -17,10 +17,10 @@
         }
 
         function add(){
-            $this->discount->nhap($_POST['discount-percent'], $_POST['discount-date-start'], $_POST['discount-date-end']);
+            $this->discount->nhap($_POST['discount-name'], $_POST['discount-percent'], $_POST['discount-date-start'], $_POST['discount-date-end']);
             $req = $this->discount->add();
             if($req) echo json_encode(array('btn'=>'add', 'success'=>true));
-            else echo json_encode(array('btn'=>'add', 'success'=>false));
+            else echo json_encode(array('btn'=>'add', 'success'=>false, 'message'=>'Tên mã giảm giá đã tồn tại'));
             exit;
         }
 
@@ -31,23 +31,42 @@
         }
 
         function update(){
-            $id = $_POST['discount_id'];
-            $phantram = $_POST['discount-percent'];
+            $id = (int)$_POST['discount_id'];
+            $tenMGG = $_POST['discount-name'];
+            $phantram = floatval($_POST['discount-percent']);
             $ngaybatdau = $_POST['discount-date-start'];
-            $ngayketthuc = $_POST['discount-date-end'];
             $trangthai = 'cdr';
-            $this->discount->nhap($phantram, $ngaybatdau, $ngayketthuc, $trangthai, $id);
+            $ngayketthuc = $_POST['discount-date-end'];
+            $this->discount->nhap($tenMGG, $phantram, $ngaybatdau, $ngayketthuc, $trangthai, $id);
             $req = $this->discount->update();
             if($req) echo json_encode(array('btn'=>'update','success'=>true));
-            else echo json_encode(array('btn'=>'update','success'=>false));
+            else echo json_encode(array('btn'=>'update','success'=>false, 'message'=>'Tên mã giảm giá đã tồn tại'));
             exit;
         }
 
-        function lock(){
-            $this->discount->setIdMGG($_POST['discount_id']);
-            $this->discount->setTrangthai('huy');
-            $this->discount->lock();
-            echo json_encode(array('success'=>true));
+        function remove(){
+            $id = (int)$_POST['discount_id'];
+            $discount = Discount::findByID($id);
+            
+            if(!$discount){
+                echo json_encode(array('success'=>false, 'message'=>'Mã giảm giá không tồn tại'));
+                exit;
+            }
+        
+            $this->discount->setIdMGG($id);
+            if($discount->getTrangthai() === 'cdr'){
+                // Xóa hẳn nếu chưa diễn ra
+                $this->discount->delete();
+                echo json_encode(array('success'=>true, 'message'=>'Đã xóa mã giảm giá'));
+            } elseif($discount->getTrangthai() === 'hh'){
+                // Ẩn ra khỏi giao diện nếu hết hạn
+                $this->discount->setTrangthai('huy');
+                $this->discount->hide();
+                echo json_encode(array('success'=>true, 'message'=>'Đã xóa mã giảm giá'));
+            } else {
+                // Không cho xóa nếu đang hoạt động ('hd')
+                echo json_encode(array('success'=>false, 'message'=>'Chỉ có thể xóa mã chưa diễn ra hoặc hết hạn'));
+            }
             exit;
         }
 
@@ -82,10 +101,10 @@
                     $this->update();
                     break;
                 
-                case 'lock_discount':
-                    $this->lock();
+                case 'remove_discount':
+                    $this->remove();
                     break;
-
+                
                 case 'search':
                     $this->search();
                     break;
