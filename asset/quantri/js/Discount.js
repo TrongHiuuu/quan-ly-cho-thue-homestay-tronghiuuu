@@ -211,9 +211,9 @@ $(document).ready(function() {
                 success: function(response){
                     const obj = JSON.parse(response);
                     if(obj.success){
-                        // Lưu trạng thái thành công vào sessionStorage
-                        sessionStorage.setItem('deleteSuccess', obj.message || 'Thao tác thành công');
-                        // Reload trang
+                    // Lưu trạng thái thành công vào sessionStorage
+                    sessionStorage.setItem('deleteSuccess', obj.message || 'Thao tác thành công');
+                    // Reload trang
                     location.reload();
                     } else {
                         toast({

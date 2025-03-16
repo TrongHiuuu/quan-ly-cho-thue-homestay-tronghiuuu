@@ -49,6 +49,17 @@
             return $list;
         }
 
+        static function getCommentsById(int $idTK) {
+            $sql = 'SELECT dg.binhluan, dg.sosao, dg.ngaytao
+                    FROM taikhoan tk
+                    LEFT JOIN datphong dp ON tk.idTK = dp.idTK
+                    LEFT JOIN danhgia dg ON dp.idDG = dg.idDG
+                    WHERE tk.idTK = ' . $idTK;
+            $con = new Database();
+            $req = $con->getAll($sql);
+            return $req;
+        }
+
         static function isExist(int $idTK, string $email){
             $sql = 'SELECT idTK FROM taikhoan WHERE email = "' . $email . '"';
             if($idTK!=0) $sql.=' AND idTK!='.$idTK;
@@ -71,11 +82,10 @@
         }
 
         static function search($kyw){
-            $sql = 'SELECT idTK, hoten, email, matkhau, dienthoai, taikhoan.idQuyen AS idQuyen, dm_quyen.trangthai AS trangthaiNQ, taikhoan.trangthai AS trangthai
-                FROM taikhoan
-                    LEFT JOIN dm_quyen ON taikhoan.idQuyen = dm_quyen.idQuyen
-                WHERE 1';
-            if($kyw != NULL)  $sql .= ' AND (idTK LIKE "%'.$kyw.'%" OR hoten LIKE "%'.$kyw.'%")';
+            $sql = 'SELECT idTK, hoten, email, matkhau, dienthoai, idQuyen, trangthai, hinhanh
+                    FROM taikhoan
+                    WHERE idQuyen = 3';
+            if($kyw != NULL)  $sql .= ' AND (idTK LIKE "%'.$kyw.'%" OR hoten LIKE "%'.$kyw.'%" OR dienthoai LIKE "%'.$kyw.'%")';
             $list = [];
             $con = new Database();
             $req = $con->getAll($sql);
@@ -84,7 +94,6 @@
                 $account->nhap($item['hoten'], $item['dienthoai'], $item['email'], $item['matkhau'], $item['trangthai'], $item['idQuyen'], $item['idTK']);
                 $list[] = [
                     'account' => $account->toArray(),
-                    'tenNQ' => $item['tenNQ']
                 ];
             }
             return $list;

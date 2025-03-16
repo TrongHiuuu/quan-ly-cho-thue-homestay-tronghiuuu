@@ -6,7 +6,23 @@
         </div>
         <!-- ... -->
         <!-- Page control -->
-        <!-- ... -->
+        <div class="col">
+                <form id="search">
+                    <input type="hidden" name="page" value="searchOwner">
+                    <div class="input-group">
+                        <input type="text"
+                                class="form-control"
+                                placeholder="Nhập id, tên, sdt chủ homestay"
+                                aria-label="Tìm kiếm tiện ích"
+                                aria-describedby="search-bar"
+                                name="kyw"
+                                id="search-input"
+                        >
+                        <button class="btn btn-control" type="submit" id="search-btn">Tìm kiếm</button>
+                    </div>
+                </form>
+            </div>
+
         <!-- Table data -->
         <div class="row mt-5">
             <div class="col">

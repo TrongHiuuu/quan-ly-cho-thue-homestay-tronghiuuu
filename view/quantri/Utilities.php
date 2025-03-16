@@ -19,8 +19,7 @@
             </div> 
             <div class="col">
                 <form id="search">
-                    <input type="hidden" name="page" value="searchCategory">
-                    <!-- <input type="hidden" name="page" value="searchCategory"> -->
+                    <input type="hidden" name="page" value="searchUtility">
                     <div class="input-group">
                         <input type="text"
                                 class="form-control"

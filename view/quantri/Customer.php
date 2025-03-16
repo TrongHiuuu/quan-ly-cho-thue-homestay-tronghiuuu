@@ -6,7 +6,23 @@
         </div>
         <!-- ... -->
         <!-- Page control -->
-        <!-- ... -->
+        <div class="col">
+                <form id="search">
+                    <input type="hidden" name="page" value="searchCustomer">
+                    <div class="input-group">
+                        <input type="text"
+                                class="form-control"
+                                placeholder="Nhập id, họ tên, sdti khách hàng"
+                                aria-label="Tìm kiếm danh mục"
+                                aria-describedby="search-bar"
+                                name="kyw"
+                                id="search-input"
+                        >
+                        <button class="btn btn-control" type="submit" id="search-btn">Tìm kiếm</button>
+                    </div>
+                </form>
+            </div>
+        </div>
         <!-- Table data -->
         <div class="row mt-5">
             <div class="col">
@@ -54,13 +70,10 @@
                                     ">
                                         <i class="fa-regular fa-eye"></i>
                                     </button>
-                                    <button>
-                                            <?php
-                                                if($acc['trangthai'])
-                                                    echo '<i class="fas fa-lock"></i>';
-                                                else
-                                                    echo '<i class="fas fa-lock-open"></i>';
-                                            ?>
+                                    <button class="btn toggle-lock-btn" 
+                                            data-account-id="<?=$acc['idTK']?>" 
+                                            data-status="<?=$acc['trangthai']?>">
+                                        <i class="fa-solid <?=$acc['trangthai'] ? 'fa-lock' : 'fa-unlock'?>"></i>
                                     </button>
                                 </td>
                                 <?php
@@ -89,31 +102,55 @@
     </main>
     <!-- ... -->
 
-<!-- Modal Thông tin chi tiết -->
-<div class="modal fade" id="accountModal" tabindex="-1" aria-labelledby="accountModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-lg modal-dialog-centered">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h2 class="modal-title text-success" id="accountModalLabel">Thông tin chi tiết</h2>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                <div class="info-section">
-                    <p><strong>Mã tài khoản:</strong> <span id="detail-id"></span></p>
-                    <p><strong>Họ và tên:</strong> <span id="detail-name"></span></p>
-                    <p><strong>Số điện thoại:</strong> <span id="detail-phone"></span></p>
-                    <p><strong>Email:</strong> <span id="detail-email"></span></p>
-                    <p><strong>Trạng thái:</strong> <span id="detail-status"></span></p>
-                    <p><strong>Hình ảnh:</strong><span id="detail-image"></span></p>
+    <!-- Modal Thông tin khách hàng -->
+    <div class="modal fade" id="accountModal" tabindex="-1" aria-labelledby="accountModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2 class="modal-title text-success" id="accountModalLabel">Thông tin chi tiết</h2>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
-                <!-- Nên thêm phần xem tất cả bình luận của khách hàng không? -->
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+                <div class="modal-body">
+                    <div class="info-section">
+                        <p><strong>Mã tài khoản:</strong> <span id="detail-id"></span></p>
+                        <p><strong>Họ và tên:</strong> <span id="detail-name"></span></p>
+                        <p><strong>Số điện thoại:</strong> <span id="detail-phone"></span></p>
+                        <p><strong>Email:</strong> <span id="detail-email"></span></p>
+                        <p><strong>Trạng thái:</strong> <span id="detail-status"></span></p>
+                        <p><strong>Hình ảnh:</strong><span id="detail-image"></span></p>
+                    </div>
+                    <div class="mt-3">
+                        <button class="btn btn-primary view-comments" id="view-comments-btn" data-bs-toggle="modal" data-bs-target="#commentsModal">
+                            Xem tất cả bình luận
+                        </button>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+                </div>
             </div>
         </div>
     </div>
-</div>
+
+    <!-- Modal danh sách bình luận -->
+    <div class="modal fade" id="commentsModal" tabindex="-1" aria-labelledby="commentsModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="commentsModalLabel">Bình luận của khách hàng</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <ul id="customer-comments" class="list-group">
+                        <!-- Danh sách bình luận -->
+                    </ul>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" id="back-to-account-btn" class="btn btn-secondary back-to-account" data-bs-dismiss="modal">Đóng</button>
+                </div>
+            </div>
+        </div>
+    </div>
     <!-- ... -->
 
 

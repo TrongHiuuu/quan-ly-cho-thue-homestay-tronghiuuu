@@ -112,6 +112,29 @@ if(isset($_GET['page']) && ($_GET['page'] !== "")){
             case 'discount':
                 include '../controller/quantri/DiscountController.php';
                 break;
+
+            case 'searchCategory':
+                include '../controller/quantri/CategoryController.php';
+                break;
+            case 'searchUtility':
+                include '../controller/quantri/UtilitiesController.php';
+                break;
+            case 'searchBooking':
+                include '../controller/quantri/BookingController.php';
+                break;
+            case 'searchCommission':
+                include '../controller/quantri/CommissionController.php';
+                break;
+            case 'searchCustomer':
+                include '../controller/quantri/CustomerController.php';
+                break;
+            case 'searchOwner':
+                include '../controller/quantri/OwnerController.php';
+                break;
+            case 'searchDiscount':
+                include '../controller/quantri/DiscountController.php';
+                break;
+
             default:
                 header('Location: index.php?page=chart');
                 break;

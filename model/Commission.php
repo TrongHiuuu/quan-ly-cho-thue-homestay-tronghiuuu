@@ -5,8 +5,8 @@
      
 
         function nhap(float $phantram, int $idMP=0){
-            $this->idMP = $idMP;
             $this->phantram = $phantram;
+            $this->idMP = $idMP;
         }
 
         static function getAll(){
@@ -68,13 +68,13 @@
             $sql = 'SELECT idMP, phantram
                 FROM mucphi
                 WHERE 1';
-            if($kyw != NULL) $sql .= ' AND (idMP LIKE "%'.$kyw.'%" OR tenTL LIKE "%'.$kyw.'%")';
+            if($kyw != NULL) $sql .= ' AND (idMP LIKE "%'.$kyw.'%" OR phantram LIKE "%'.$kyw.'%")';
             $list = [];
             $con = new Database();
             $req = $con->getAll($sql);
             foreach($req as $item){
                 $cat = new Commission();
-                $cat->nhap($item['idMP'], $item['phantram']);
+                $cat->nhap($item['phantram'], $item['idMP']);
                 $list[] = $cat;
             }
             return $list;

@@ -90,7 +90,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         </div>
                     `).join('');
                 } else {
-                    `<p>Không có bình luận ${isPositive ? 'tích cực' : 'tiêu cực'}.</p>`;
+                    container.innerHTML = `<p>Không có bình luận ${isPositive ? 'tích cực' : 'tiêu cực'}.</p>`;
                 }
             },
             error: function(xhr, status, error) {

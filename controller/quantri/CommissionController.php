@@ -1,4 +1,13 @@
 <?php
+    /*
+        Nghiệp vụ của tính năng quản lý phí hoa hồng:
+        +  Việc áp dụng một phí hoa hồng
+            lên một quận đã có một phí hoa hồng khác từ trước
+            sẽ ghi đè mã hoa hồng mới lên quận được chọn
+        +  Trong phần chỉnh sửa mức phí hoa hồng
+            nếu unset một quận trong danh sách quận được chọn
+            thì phí hoa hồng của quận đó sẽ được đặt về null 
+    */ 
     include dirname(__FILE__).'/../BaseController.php';
     include dirname(__FILE__).'/../../model/Commission.php';
     include dirname(__FILE__).'/../../model/Ward.php';
@@ -49,9 +58,9 @@
                     }
                 }
 
-                echo json_encode(['btn' => 'add', 'success' => true]);
+                echo json_encode(['btn' => 'add', 'success' => true, 'message' => 'Thêm mức phí thành công']);
             } else {
-                echo json_encode(['btn' => 'add', 'success' => false]);
+                echo json_encode(['btn' => 'add', 'success' => false, 'message' => 'Mức phí đã tồn tại']);
             }
             exit;
         }
@@ -75,15 +84,15 @@
 
         function update(){
             $idMP = $_POST['commission_id'];
-            $this->commission->nhap($idMP, $_POST['commission_rate']);
+            $this->commission->nhap($_POST['commission_rate'],  $idMP);
             $req = $this->commission->update();
             if ($req) {
                 $con = new Database();
-                // // Xóa các thành phố cũ
-                // $sql = "UPDATE quan SET
-                // idMP = null
-                // WHERE idMP = $idMP";
-                // $con->execute($sql);
+                // Xóa các thành phố cũ
+                $sql = "UPDATE quan SET
+                idMP = null
+                WHERE idMP = ".$idMP;
+                $con->execute($sql);
                 
                 // Thêm các thành phố mới
                 $wards = $_POST['wards'] ?? [];
@@ -93,9 +102,9 @@
                     WHERE idQuan = $idQuan";
                     $con->execute($sql);
                 }
-                echo json_encode(['btn' => 'update', 'success' => true]);
+                echo json_encode(['btn' => 'update', 'success' => true, 'message' => 'Cập nhật mức phí thành công']);
             } else {
-                echo json_encode(['btn' => 'update', 'success' => false]);
+                echo json_encode(['btn' => 'update', 'success' => false, 'message' => 'Mức phí đã tồn tại']);
             }
             exit;
         }

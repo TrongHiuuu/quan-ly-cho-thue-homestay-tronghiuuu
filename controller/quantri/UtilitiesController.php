@@ -65,7 +65,7 @@
             $result = [
                 'paging' => Utility::search($kyw)
             ];
-            $this->renderSearch('Utility', $result, $pageTitle);
+            $this->renderSearch('Utilities', $result, $pageTitle);
         }
 
         function checkAction($action){

@@ -132,7 +132,7 @@
     </main>
     <!-- ... -->
 
-    <!-- Modal -->
+    <!-- Modal thêm mã giảm giá-->
     <div class="modal fade" id="discountModal" tabindex="-1" aria-labelledby="discountModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
@@ -180,33 +180,34 @@
             </div>
         </div>
     </div>
+
     <!-- Modal Xóa Mã Giảm Giá -->
-<div class="modal fade" id="deleteDiscountModal" tabindex="-1" aria-labelledby="deleteDiscountModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="deleteDiscountModalLabel">Xác nhận xóa mã giảm giá</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+    <div class="modal fade" id="deleteDiscountModal" tabindex="-1" aria-labelledby="deleteDiscountModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="deleteDiscountModalLabel">Xác nhận xóa mã giảm giá</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <form id="deleteDiscountForm">
+                    <div class="modal-body">
+                        <input type="hidden" name="discount_id" id="discount_id">
+                        <p>
+                            Mã giảm giá: <span id="discount_name" class="fw-bold"></span>
+                        </p>
+                        <p>
+                            Phần trăm giảm: <span id="discount_percentage" class="fw-bold"></span>
+                        </p>
+                        <p id="deleteMessage" class="fw-bold"></p>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                        <button type="submit" class="btn btn-danger">Xác nhận</button>
+                    </div>
+                </form>
             </div>
-            <form id="deleteDiscountForm">
-                <div class="modal-body">
-                    <input type="hidden" name="discount_id" id="discount_id">
-                    <p>
-                        Mã giảm giá: <span id="discount_name" class="fw-bold"></span>
-                    </p>
-                    <p>
-                        Phần trăm giảm: <span id="discount_percentage" class="fw-bold"></span>
-                    </p>
-                    <p id="deleteMessage" class="fw-bold"></p>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
-                    <button type="submit" class="btn btn-danger">Xác nhận</button>
-                </div>
-            </form>
         </div>
     </div>
-</div>
     <!-- ... -->
 
     <!-- Link JS ở chỗ này nè!!! -->

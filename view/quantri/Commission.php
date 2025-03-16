@@ -19,12 +19,11 @@
             </div> 
             <div class="col">
                 <form id="search">
-                    <input type="hidden" name="page" value="searchCategory">
-                    <!-- <input type="hidden" name="page" value="searchCategory"> -->
+                    <input type="hidden" name="page" value="searchCommission">
                     <div class="input-group">
                         <input type="text"
                                 class="form-control"
-                                placeholder="Nhập id, tên danh mục"
+                                placeholder="Nhập id, phần trăm phí hoa hồng"
                                 aria-label="Tìm kiếm danh mục"
                                 aria-describedby="search-bar"
                                 name="kyw"

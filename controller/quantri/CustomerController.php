@@ -21,19 +21,56 @@
 
         function getCustomerDetails() {
             if (!isset($_POST['customer_id'])) {
-                echo json_encode(['success' => false, 'msg' => 'Thiếu customer_id']);
+                echo json_encode(['success' => false, 'message' => 'Thiếu customer_id']);
                 exit;
             }
             $customerId = (int)$_POST['customer_id'];
             $customer = Customer::findByID($customerId);
-            unset($customer['matkhau']);
             if ($customer !== null) {
-                echo json_encode(['success' => true, 'data' => $customer]);
+                unset($customer['matkhau']);
+                $comments = Customer::getCommentsById($customerId);
+                $data = $customer;
+                $data['comments'] = $comments;
+                echo json_encode(['success' => true, 'data' => $data]);
            } else {
-                echo json_encode(['success' => false, 'msg' => 'Không tìm thấy khách hàng']);
+                echo json_encode(['success' => false, 'message' => 'Không tìm thấy khách hàng']);
             }
             exit;
         }
+
+    function lockCustomer() {
+        if (!isset($_POST['customer_id'])) {
+            echo json_encode(['success' => false, 'message' => 'Thiếu customer_id']);
+            exit;
+        }
+        $customerId = (int)$_POST['customer_id'];
+        $customer = Customer::findByID($customerId);
+        $this->customer->nhap($customer['hoten'], $customer['dienthoai'], $customer['email'], $customer['matkhau'], 0, $customer['idQuyen'], $customer['hinhanh'], $customerId);
+        if ($customer !== null) {
+            $this->customer->lock();
+            echo json_encode(['success' => true, 'message' => 'Khóa tài khoản thành công']);
+        } else {
+            echo json_encode(['success' => false, 'message' => 'Không tìm thấy khách hàng']);
+        }
+        exit;
+    }
+    
+    function unlockCustomer() {
+        if (!isset($_POST['customer_id'])) {
+            echo json_encode(['success' => false, 'message' => 'Thiếu customer_id']);
+            exit;
+        }
+        $customerId = (int)$_POST['customer_id'];
+        $customer = Customer::findByID($customerId);
+        $this->customer->nhap($customer['hoten'], $customer['dienthoai'], $customer['email'], $customer['matkhau'], 0, $customer['idQuyen'], $customer['hinhanh'], $customerId);
+        if ($customer !== null) {
+            $this->customer->unlock();
+            echo json_encode(['success' => true, 'message' => 'Mở khóa tài khoản thành công']);
+        } else {
+            echo json_encode(['success' => false, 'message' => 'Không tìm thấy khách hàng']);
+        }
+        exit;
+    }
 
         function search(){
             $pageTitle = 'searchCustomer';
@@ -56,6 +93,14 @@
 
                 case 'getCustomerDetails':
                     $this->getCustomerDetails();
+                    break;
+
+                case 'lockCustomer':
+                    $this->lockCustomer();
+                    break;
+                
+                case 'unlockCustomer':
+                    $this->unlockCustomer();
                     break;
 
                 case 'search':

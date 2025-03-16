@@ -160,16 +160,26 @@ include dirname(__FILE__).'/Customer.php';
         }
 
         static function searchOwner($kyw){
-            $sql = 'SELECT DISTINCT taikhoan.idTK AS idTK, hoten, email, matkhau, dienthoai, taikhoan.idQuyen AS idQuyen, dm_quyen.tenQuyen AS tenNQ, taikhoan.trangthai AS trangthai, hinhanh, stk, sodu, idNH
-                    FROM host
-                    WHERE idTK != 0';
-            if($kyw != NULL) $sql .= ' AND (idTK LIKE "%'.$kyw.'%" OR stk LIKE "%'.$kyw.'%")';
+            $sql = 'SELECT t.*, h.sodu, h.stk, h.idNH, AVG(dg.sosao) AS sosao, nh.tenNH
+                        FROM taikhoan t
+                        LEFT JOIN host h ON t.idTK = h.idTK
+                        LEFT JOIN datphong dp ON t.idTK = dp.idTK
+                        LEFT JOIN danhgia dg ON dp.idDG = dg.idDG
+                        LEFT JOIN nganhang nh ON h.idNH = nh.idNH
+                        WHERE t.idQuyen = 2';
+            if($kyw != NULL) $sql .= ' AND (t.idTK LIKE "%'.$kyw.'%" OR t.hoten LIKE "%'.$kyw.'%" OR t.dienthoai LIKE "%'.$kyw.'%")';
+            $sql .= ' GROUP BY t.idTK';
             $list = [];
                 $con = new Database();
                 $req = $con->getAll($sql);
                 foreach($req as $item){
                     $host = new Owner();
                     $host->nhapOwner($item['hoten'], $item['dienthoai'], $item['email'], $item['matkhau'], $item['trangthai'], $item['idQuyen'], $item['hinhanh'], $item['sodu'], $item['stk'], $item['idNH'], $item['idTK']);
+                    $list[] = [
+                        'account' => $host->toArray(),
+                        'sosao' => $item['sosao'],
+                        'nganhang' => $item['tenNH']
+                    ];
                 }
                 return $list;
         }
@@ -201,14 +211,17 @@ include dirname(__FILE__).'/Customer.php';
         }
 
         static function getCommentsByOwner(int $idTK, bool $isPositive) {
+            //var_dump($idTK, $isPositive);
             $sql = 'SELECT sanpham.tieude AS room_name, danhgia.sosao AS rating, danhgia.binhluan AS content 
                     FROM sanpham 
-                    LEFT JOIN datphong ON sanpham.idSP = datphong.idSP 
-                    LEFT JOIN danhgia ON datphong.idDG = danhgia.idDG 
+                    INNER JOIN datphong ON sanpham.idSP = datphong.idSP 
+                    INNER JOIN danhgia ON datphong.idDG = danhgia.idDG 
                     WHERE sanpham.idTK = ' . $idTK . ' AND danhgia.idDG IS NOT NULL';
 
             if ($isPositive) {
-                $sql .= $isPositive ? ' AND danhgia.sosao >= 3' : ' AND danhgia.sosao < 3';
+                $sql .= ' AND danhgia.sosao >= 3';
+            } else {
+                $sql .= ' AND danhgia.sosao < 3';
             }
 
             $con = new Database();
@@ -238,21 +251,6 @@ include dirname(__FILE__).'/Customer.php';
             }
             return false;
         }
-
-        // function update(){
-        //     if(!(self::isExist($this->idTK, $this->sodu))){
-        //         $sql = 'UPDATE host 
-        //             SET 
-        //             sodu = "'.$this->sodu.'",
-        //             stk = "'.$this->stk.'",
-        //              WHERE idTK ='.$this->idTK;
-        //         $con = new Database();
-        //         $con->execute($sql);
-
-        //         return true;
-        //     }
-        //     return false;
-        // }
         
         function toArray() {
             return array_merge(parent::toArray(), [

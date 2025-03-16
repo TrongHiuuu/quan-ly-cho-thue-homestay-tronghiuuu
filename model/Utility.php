@@ -26,22 +26,6 @@
             return $list;
         }
 
-        static function getAllActive(){
-            $list = [];
-            $sql = 'SELECT DISTINCT * FROM tienich 
-            WHERE tienich.trangthai = 1
-            ';
-            $con = new Database();
-            $req = $con->getAll($sql);
-
-            foreach($req as $item){
-                $utility = new Utility();
-                $utility->nhap($item['tenTI'], $item['icon'], $item['trangthai'], $item['idTI']);
-                $list[] = $utility;
-            }
-            return $list;
-        }
-
         static function isExist($idTI, $tenTI){
             $sql = 'SELECT idTI FROM tienich WHERE tenTI= "'.$tenTI.'"';
             if($idTI!=0) $sql.=' AND idTI!='.$idTI;
@@ -84,7 +68,7 @@
         }
 
         static function search($kyw){
-            $sql = 'SELECT idTI, ten, icon, trangthai
+            $sql = 'SELECT idTI, tenTI, icon, trangthai
                 FROM tienich
                 WHERE 1';
             if($kyw != NULL) $sql .= ' AND (idTI LIKE "%'.$kyw.'%" OR tenTI LIKE "%'.$kyw.'%")';
@@ -93,7 +77,7 @@
             $req = $con->getAll($sql);
             foreach($req as $item){
                 $cat = new Utility();
-                $cat->nhap($item['ten'], $item['icon'], $item['trangthai'], $item['idTI']);
+                $cat->nhap($item['tenTI'], $item['icon'], $item['trangthai'], $item['idTI']);
                 $list[] = $cat;
             }
             return $list;

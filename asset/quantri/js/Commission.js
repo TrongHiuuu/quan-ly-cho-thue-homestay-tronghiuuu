@@ -110,14 +110,14 @@ $(document).ready(function() {
                         if (obj.btn == 'add') {
                             toast({
                                 title: 'Thành công',
-                                message: 'Thêm phí hoa hồng thành công',
+                                message: obj.message,
                                 type: 'success',
                                 duration: 3000
                             });
                         } else {
                             toast({
                                 title: 'Thành công',
-                                message: 'Cập nhật phí hoa hồng thành công',
+                                message: obj.message,
                                 type: 'success',
                                 duration: 3000
                             });
@@ -129,7 +129,7 @@ $(document).ready(function() {
                         } else {
                             toast({
                                 title: 'Lỗi',
-                                message: 'Cập nhật phí hoa hồng thất bại',
+                                message: obj.message,
                                 type: 'error',
                                 duration: 3000
                             });

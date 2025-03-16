@@ -31,20 +31,6 @@
             return $list;
         }
 
-        static function getAllWaiting(){
-            $list = [];
-            $sql = 'SELECT * FROM magiamgia WHERE trangthai = "cdr"';
-            $con = new Database();
-            $req = $con->getAll($sql);
-        
-            foreach($req as $item){
-                $discount = new Discount();
-                $discount->nhap($item['tenMGG'], $item['phantram'], $item['ngaybatdau'], $item['ngayketthuc'], $item['trangthai'], $item['idMGG']);
-                $list[] = $discount;
-            }
-            return $list;
-        }
-
         static function isExist(int $idMGG, string $tenMGG){
             $sql = 'SELECT idMGG FROM magiamgia WHERE tenMGG= "'.$tenMGG.'"';
             if($idMGG!=0) $sql.=' AND idMGG!='.$idMGG;
@@ -53,7 +39,7 @@
         }
 
         static function findByID($idMGG){
-            $sql = 'SELECT * FROM magiamgia WHERE idMGG='.$idMGG;
+            $sql = 'SELECT * FROM magiamgia WHERE trangthai != "huy" AND idMGG='.$idMGG;
             $con = new Database();
             $req = $con->getOne($sql);
             if($req!=null){
@@ -67,7 +53,7 @@
         static function search($kyw){
             $sql = 'SELECT DISTINCT idMGG, tenMGG, phantram, ngaybatdau, ngayketthuc, trangthai
                     FROM magiamgia
-                    WHERE 1';
+                    WHERE trangthai != "huy"';
             if($kyw != NULL) $sql .= ' AND (idMGG LIKE "%'.$kyw.'%" OR tenMGG LIKE "%'.$kyw.'%" OR phantram LIKE "%'.$kyw.'%")';
             $list = [];
             $con = new Database();
